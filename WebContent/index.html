@@ -1,0 +1,28 @@
+<html>
+    <head>
+        <title>Chat Tutorial</title>
+        <link rel="stylesheet" href="style.css"/>
+    </head>
+    <body>
+        <header>
+            <input id="person" placeholder="Username..." autofocus>
+            <button id="connect">Connect</button>
+            <button id="disconnect" disabled>Disconnect</button>
+        </header>
+        <aside>
+            <h5>Online User(s)</h5>
+            <ul><li id="all" class="hoverable">All</li></ul>
+            <ul id="userList"></ul>
+        </aside>
+        <article>
+            <div id="dialog">
+                <span>Chat to <span id="chatTo">All</span></span>
+                <div id="message-board"></div>
+                <hr>
+                <textarea id="message" placeholder="message.."></textarea>
+                <button id="send">Send</button>
+            </div>
+        </article>
+        <script src="script.js"></script>
+    </body>
+</html>
