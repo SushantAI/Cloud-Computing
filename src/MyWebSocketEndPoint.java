@@ -39,13 +39,13 @@ public class MyWebSocketEndPoint {
 	    //Give a list current online users to the new socket connection
 	    //because we store username as the key of the map, we can get all
 	    //  username list from the map's keySet
-	    String reply = "newUser|" + String.join("|", persons.keySet());
+	    String reply = "newUser~" + String.join("~", persons.keySet());
 	    websocOpen.getBasicRemote().sendText(reply);
 
 	    //Loop through all socket's session obj, then send a text message
 	    for (Session slave : persons.values()) {
 	        if(slave == websocOpen) continue;
-	        slave.getBasicRemote().sendText("newUser|" + addPerson);
+	        slave.getBasicRemote().sendText("newUser~" + addPerson);
 	    }
 	}
 
@@ -55,7 +55,7 @@ public class MyWebSocketEndPoint {
 	    //Message format: 'From|Message'
 	    //so we split the incoming message with '|' token
 	    //to get the destination and message content data
-	    String[] msg = chunk.split("\\|");
+	    String[] msg = chunk.split("\\~");
 	    String receiver = msg[0]; String msgBody = msg[1];
 
 	    //Retrieve the sender's username from it's property
@@ -69,12 +69,12 @@ public class MyWebSocketEndPoint {
 	        //if the destination chat is 'all', then we broadcast the message
 	        for (Session client : persons.values()) {
 	            if(client.equals(websocOnMsg)) continue;
-	            client.getBasicRemote().sendText("message|" + getPerson + "|" + msgBody + "|all" );
+	            client.getBasicRemote().sendText("message~" + getPerson + "~" + msgBody + "~all" );
 	        }
 	    } else {
 	        //find the username to be sent, then deliver the message
 	        Session slave = persons.get(receiver);
-	        String reply = "message|" + getPerson + "|" + msgBody;
+	        String reply = "message~" + getPerson + "~" + msgBody;
 	        slave.getBasicRemote().sendText(reply);
 	    }
 	}
@@ -87,7 +87,7 @@ public class MyWebSocketEndPoint {
 	    
 	    //broadcast to all people, that the current user is leaving the chat room
 	    for (Session slave : persons.values()) {
-	        slave.getBasicRemote().sendText("removeUser|" + persn);
+	        slave.getBasicRemote().sendText("removeUser~" + persn);
 	    }
 	}
 }

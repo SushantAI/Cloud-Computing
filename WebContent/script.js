@@ -52,15 +52,15 @@ function socketOnOpen(e) {
 }
 
 function socketOnMessage(e) {
-    var eventName = e.data.substr(0, e.data.indexOf("|"));
-    var data = e.data.substr(e.data.indexOf("|") + 1);
+    var eventName = e.data.substr(0, e.data.indexOf("~"));
+    var data = e.data.substr(e.data.indexOf("~") + 1);
 
     var fn;
     if(eventName == 'newUser') fn = newUser;
     else if(eventName == 'removeUser') fn = removeUser;
     else if(eventName == 'message') fn = getMessage;
 
-    fn.apply(null, data.split('|'));
+    fn.apply(null, data.split('~'));
 }
 
 function socketOnClose(e) {
@@ -170,7 +170,7 @@ function sendMessage() {
 
     //send a socket message with the following format
     //destination|message, e.g. Andi|Hello, world
-    socket.send(destination + '|' + message );
+    socket.send(destination + '~' + message );
     messageInputEl.value = '';
 
 
