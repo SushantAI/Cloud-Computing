@@ -3,17 +3,20 @@ body {
     margin: 0px;
     font-family: Verdana;
     display: flex;
+    background: #97ff97;
 }
 
 header {
     border-bottom: 5px solid #acacac;
     position: fixed;
     text-align: right;
+    background: lightblue;
     padding: 6px;
     width: 100%;
-    background: lightblue;
     z-index: 3;
 }
+
+header > h1 { display: inline-block; }
 
 aside {
     width: 245px;
@@ -115,7 +118,7 @@ aside>h5 {
 }
 
 #dialog>#message-board {
-    height: 300px;
+    height: 450px;
     overflow-y: auto;
 }
 
