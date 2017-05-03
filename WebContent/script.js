@@ -57,9 +57,9 @@ function socketOnMessage(e) {
     var msg = e.data.substr(e.data.indexOf("~") + 1);
 
     var func;
-    if(ent == 'newUser') func = newUser;
-    else if(ent == 'removeUser') func = removeUser;
-    else if(ent == 'message') func = getMessage;
+    if(ent == 'newUser') func = addPrsn;
+    else if(ent == 'removeUser') func = deletePrsn;
+    else if(ent == 'message') func = receiveChunk;
 
     func.apply(null, msg.split('~'));
 }
@@ -74,7 +74,7 @@ function socketOnClose(e) {
     usernameListEl.innerHTML = '';
 }
 
-function newUser() {
+function addPrsn() {
     //if there is no users, return from the function
     if(arguments.length == 1 && arguments[0] == "") return;
     var personLst = arguments;
@@ -91,7 +91,7 @@ function newUser() {
         if(person != usernameInputEl.value) {
             //we can chat to everyone in the chat room
             //except our self
-            dc.onclick = chatToFn(person);
+            dc.onclick = talkToSpecificPerson(person);
             dc.classList.add('hoverable');
         }
         cdf.appendChild(dc);
@@ -99,7 +99,7 @@ function newUser() {
     usernameListEl.appendChild(cdf);
 }
 
-function getMessage(chunkFrm, chunk, rcvr) {
+function receiveChunk(chunkFrm, chunk, rcvr) {
         //destination
 		rcvr = rcvr || chunkFrm;
 
@@ -107,11 +107,11 @@ function getMessage(chunkFrm, chunk, rcvr) {
         //then add it to the conversation
         //else notify the user that there is an incoming message
         if(rcvr == rcvr) {
-            var addEmt = createNewChat(chunkFrm, chunk);
+            var addEmt = updatePerson(chunkFrm, chunk);
             messageBoardEl.appendChild(addEmt);
         } else {
             var hb = usernameListEl.querySelector('#' + rcvr);
-            addCountMessage(hb);
+            chunkCounter(hb);
         }
 
         //push the incoming message to the conversation
@@ -119,7 +119,7 @@ function getMessage(chunkFrm, chunk, rcvr) {
         else chatRoom[rcvr] = [addEmt];
 }
 
-function removeUser(deletePerson) {
+function deletePrsn(deletePerson) {
     //remove the user from the username list
     usernameListEl.querySelector('#' + deletePerson).remove();
 }
@@ -133,7 +133,7 @@ function removeUser(deletePerson) {
  * </div>
  *
  * */
-function createNewChat(chunkFrm, chunk) {
+function updatePerson(chunkFrm, chunk) {
     var crtEmt = document.createElement('div');
     var chunkFrmEmt = document.createElement('span');
     var chunkEmt = document.createElement('span');
@@ -148,7 +148,7 @@ function createNewChat(chunkFrm, chunk) {
     return crtEmt;
 }
 
-function addCountMessage(hb) {
+function chunkCounter(hb) {
     var cnthb = hb.querySelector('.count');
     if(cnthb) {
         var cnt = cnthb.textContent;
@@ -162,10 +162,10 @@ function addCountMessage(hb) {
     }
 }
 
-sendBtnEl.onclick = sendMessage;
-chatToAllEl.onclick = chatToFn('all');
+sendBtnEl.onclick = chunkSend;
+chatToAllEl.onclick = talkToSpecificPerson('all');
 
-function sendMessage() {
+function chunkSend() {
     var chunk = messageInputEl.value;
     if(chunk == '') return;
 
@@ -177,12 +177,12 @@ function sendMessage() {
 
     var deliv = usernameInputEl.value;
     //also put our conversation in the message board
-    getMessage(deliv, chunk, rcvr);
+    receiveChunk(deliv, chunk, rcvr);
     //scroll to the bottom to see the newest message
     messageBoardEl.scrollTop = messageBoardEl.scrollHeight;
 }
 
-function chatToFn(person) {
+function talkToSpecificPerson(person) {
     return function(e) {
         //remove the notification of how many new messages
         var cnt = usernameListEl.querySelector('#' + person + '>.count');
