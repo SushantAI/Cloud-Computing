@@ -27,7 +27,7 @@ public class MyWebSocketEndPoint {
 	    Map<String, List<String>> attribute = websocOpen.getRequestParameterMap();
 	    List<String> lsPrsn = attribute.get("person");
 	    String addPerson = lsPrsn.get(0);
-	    System.out.println(addPerson);
+	    System.out.println("User " + addPerson + " joined the chat room");
 	    //Add the new socket to the collection
 	    persons.put(addPerson, websocOpen);
 

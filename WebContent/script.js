@@ -13,10 +13,11 @@ var chatToLabelEl = articleEl.querySelector('#destination');
 var chatToAllEl = document.querySelector('#all');
 
 // current chat destination
-var destination = 'all';
+var rcvr = 'all';
 
 //Chat room that holds every conversation
-var chatRoom = {
+var chatRoom = 
+{
     'all': []
 };
 
@@ -52,15 +53,15 @@ function socketOnOpen(e) {
 }
 
 function socketOnMessage(e) {
-    var eventName = e.data.substr(0, e.data.indexOf("~"));
-    var data = e.data.substr(e.data.indexOf("~") + 1);
+    var ent = e.data.substr(0, e.data.indexOf("~"));
+    var msg = e.data.substr(e.data.indexOf("~") + 1);
 
-    var fn;
-    if(eventName == 'newUser') fn = newUser;
-    else if(eventName == 'removeUser') fn = removeUser;
-    else if(eventName == 'message') fn = getMessage;
+    var func;
+    if(ent == 'newUser') func = newUser;
+    else if(ent == 'removeUser') func = removeUser;
+    else if(ent == 'message') func = getMessage;
 
-    fn.apply(null, data.split('~'));
+    func.apply(null, msg.split('~'));
 }
 
 function socketOnClose(e) {
@@ -76,51 +77,51 @@ function socketOnClose(e) {
 function newUser() {
     //if there is no users, return from the function
     if(arguments.length == 1 && arguments[0] == "") return;
-    var usernameList = arguments;
+    var personLst = arguments;
 
     //Loop through all online users
     //foreach user, create a list with username as it's id and content
     //when the list is clicked, change the chat target to that user
-    var documentFragment = document.createDocumentFragment();
-    for(var i = 0; i < usernameList.length; i++) {
-        var username = usernameList[i];
-        var liEl = document.createElement("li");
-        liEl.id = username;
-        liEl.textContent = username;
-        if(username != usernameInputEl.value) {
+    var cdf = document.createDocumentFragment();
+    for(var i = 0; i < personLst.length; i++) {
+        var person = personLst[i];
+        var dc = document.createElement("li");
+        dc.id = person;
+        dc.textContent = person;
+        if(person != usernameInputEl.value) {
             //we can chat to everyone in the chat room
             //except our self
-            liEl.onclick = chatToFn(username);
-            liEl.classList.add('hoverable');
+            dc.onclick = chatToFn(person);
+            dc.classList.add('hoverable');
         }
-        documentFragment.appendChild(liEl);
+        cdf.appendChild(dc);
     }
-    usernameListEl.appendChild(documentFragment);
+    usernameListEl.appendChild(cdf);
 }
 
-function getMessage(sender, message, destination) {
+function getMessage(chunkFrm, chunk, rcvr) {
         //destination
-        destination = destination || sender;
+		rcvr = rcvr || chunkFrm;
 
         //if the current chat is the same as the incoming message destination
         //then add it to the conversation
         //else notify the user that there is an incoming message
-        if(destination == destination) {
-            var newChatEl = createNewChat(sender, message);
-            messageBoardEl.appendChild(newChatEl);
+        if(rcvr == rcvr) {
+            var addEmt = createNewChat(chunkFrm, chunk);
+            messageBoardEl.appendChild(addEmt);
         } else {
-            var toEl = usernameListEl.querySelector('#' + destination);
-            addCountMessage(toEl);
+            var hb = usernameListEl.querySelector('#' + rcvr);
+            addCountMessage(hb);
         }
 
         //push the incoming message to the conversation
-        if(chatRoom[destination]) chatRoom[destination].push(newChatEl);
-        else chatRoom[destination] = [newChatEl];
+        if(chatRoom[rcvr]) chatRoom[rcvr].push(addEmt);
+        else chatRoom[rcvr] = [addEmt];
 }
 
-function removeUser(removedUsername) {
+function removeUser(deletePerson) {
     //remove the user from the username list
-    usernameListEl.querySelector('#' + removedUsername).remove();
+    usernameListEl.querySelector('#' + deletePerson).remove();
 }
 
 /**
@@ -132,32 +133,32 @@ function removeUser(removedUsername) {
  * </div>
  *
  * */
-function createNewChat(sender, message) {
-    var newChatDivEl = document.createElement('div');
-    var senderEl = document.createElement('span');
-    var messageEl = document.createElement('span');
+function createNewChat(chunkFrm, chunk) {
+    var crtEmt = document.createElement('div');
+    var chunkFrmEmt = document.createElement('span');
+    var chunkEmt = document.createElement('span');
 
-    if(sender == usernameInputEl.value) sender = 'me';
+    if(chunkFrm == usernameInputEl.value) chunkFrm = 'me';
 
-    senderEl.textContent = sender;
-    messageEl.textContent = message;
+    chunkFrmEmt.textContent = chunkFrm;
+    chunkEmt.textContent = chunk;
 
-    newChatDivEl.appendChild(senderEl);
-    newChatDivEl.appendChild(messageEl);
-    return newChatDivEl;
+    crtEmt.appendChild(chunkFrmEmt);
+    crtEmt.appendChild(chunkEmt);
+    return crtEmt;
 }
 
-function addCountMessage(toEl) {
-    var countEl = toEl.querySelector('.count');
-    if(countEl) {
-        var count = countEl.textContent;
-        count = +count;
-        countEl.textContent = count + 1;
+function addCountMessage(hb) {
+    var cnthb = hb.querySelector('.count');
+    if(cnthb) {
+        var cnt = cnthb.textContent;
+        cnt = +cnt;
+        cnthb.textContent = cnt + 1;
     } else {
-        var countEl = document.createElement('span');
-        countEl.classList.add('count');
-        countEl.textContent = '1';
-        toEl.appendChild(countEl);
+        var cnthb = document.createElement('span');
+        cnthb.classList.add('count');
+        cnthb.textContent = '1';
+        hb.appendChild(cnthb);
     }
 }
 
@@ -165,40 +166,40 @@ sendBtnEl.onclick = sendMessage;
 chatToAllEl.onclick = chatToFn('all');
 
 function sendMessage() {
-    var message = messageInputEl.value;
-    if(message == '') return;
+    var chunk = messageInputEl.value;
+    if(chunk == '') return;
 
     //send a socket message with the following format
     //destination|message, e.g. Andi|Hello, world
-    socket.send(destination + '~' + message );
+    socket.send(rcvr + '~' + chunk );
     messageInputEl.value = '';
 
 
-    var sender = usernameInputEl.value;
+    var deliv = usernameInputEl.value;
     //also put our conversation in the message board
-    getMessage(sender, message, destination);
+    getMessage(deliv, chunk, rcvr);
     //scroll to the bottom to see the newest message
     messageBoardEl.scrollTop = messageBoardEl.scrollHeight;
 }
 
-function chatToFn(username) {
+function chatToFn(person) {
     return function(e) {
         //remove the notification of how many new messages
-        var countEl = usernameListEl.querySelector('#' + username + '>.count');
-        if(countEl) countEl.remove();
+        var cnt = usernameListEl.querySelector('#' + person + '>.count');
+        if(cnt) cnt.remove();
 
-        chatToLabelEl.textContent = username;
-        destination = username;
+        chatToLabelEl.textContent = person;
+        rcvr = person;
         messageBoardEl.innerHTML = '';
 
         //Show all conversation from the username we are chatting to
-        var conversationList = chatRoom[destination];
-        if(!conversationList) return;
-        var df = document.createDocumentFragment();
-        conversationList.forEach(function (conversation) {
-            df.appendChild(conversation);
+        var talkPrg = chatRoom[rcvr];
+        if(!talkPrg) return;
+        var docFrag = document.createDocumentFragment();
+        talkPrg.forEach(function (talk) {
+        	docFrag.appendChild(talk);
         });
-        messageBoardEl.appendChild(df);
+        messageBoardEl.appendChild(docFrag);
     }
 
 }
